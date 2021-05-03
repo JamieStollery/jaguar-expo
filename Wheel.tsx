@@ -1,3 +1,4 @@
+import { useAssets } from "expo-asset";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
@@ -19,10 +20,12 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     position: "absolute",
+    borderStyle: "solid",
     borderColor: "black",
     borderWidth: 2,
     top: 75,
     borderRadius: 20,
+    overflow: "hidden",
   },
 });
 
@@ -36,6 +39,17 @@ export default function Wheel() {
     radius: 300,
     cards: [],
   });
+  
+  const [assets] = useAssets([
+    require("./assets/images/beer.png"),
+    require("./assets/images/beer.png"),
+    require("./assets/images/beer.png"),
+    require("./assets/images/beer.png"),
+    require("./assets/images/beer.png"),
+    require("./assets/images/beer.png"),
+    require("./assets/images/beer.png"),
+    require("./assets/images/beer.png"),
+  ]);
 
   const rotationValue = useRef(new Animated.Value(0)).current;
 
@@ -49,40 +63,44 @@ export default function Wheel() {
       x: StyleSheet.flatten(styles.wheel).width / 2,
       y: StyleSheet.flatten(styles.wheel).height / 2,
     };
-
-    const cards: JSX.Element[] = [];
-    for (var i = 0; i < 8; i++) {
-      cards.push(
-        <Card
-          theta={(Math.PI / 4) * i}
-          radius={state.radius}
-          center={center}
-          key={i}
-        />
-      );
-    }
-
+    const cards = assets?.map((asset, i) => (
+      <Card
+        theta={(Math.PI / 4) * i}
+        radius={state.radius}
+        center={center}
+        asset={asset}
+        rotationValue={rotationValue}
+        key={i}
+      />
+    ));
     setState((state) => ({ ...state, cards: cards }));
-  }, []);
+  }, [assets]);
 
   const onPress = () => {
+    rotationValue.setValue(0);
+
+    const randomValue = Math.floor(Math.random() * 8) + 1;
+    const toValue = 360 + randomValue * 45;
+
     Animated.timing(rotationValue, {
-      toValue: 360,
-      duration: 1000,
-      easing: Easing.linear,
+      toValue: toValue,
+      duration: toValue * 4,
+      easing: Easing.bezier(0.3, 1, 0.3, 1),
       useNativeDriver: true,
-    }).start(() => rotationValue.setValue(0));
+    }).start(() => rotationValue.setValue(toValue - 360));
   };
 
   return (
-    <TouchableWithoutFeedback onPress={onPress}>
-      <View style={styles.box}>
-        <Animated.View
-          style={[styles.wheel, { transform: [{ rotate: rotation }] }]}
-        >
-          {state.cards}
-        </Animated.View>
-      </View>
-    </TouchableWithoutFeedback>
+    <>
+      <TouchableWithoutFeedback onPress={onPress}>
+        <View style={[styles.box]}>
+          <Animated.View
+            style={[styles.wheel, { transform: [{ rotate: rotation }] }]}
+          >
+            {state.cards}
+          </Animated.View>
+        </View>
+      </TouchableWithoutFeedback>
+    </>
   );
 }
