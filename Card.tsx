@@ -1,16 +1,16 @@
-import { Asset } from "expo-asset";
 import React from "react";
-import { Animated, StyleSheet } from "react-native";
+import { Animated, Dimensions, ImageSourcePropType, StyleSheet } from "react-native";
+
+const deviceWidth = Dimensions.get('window').width;
 
 const styles = StyleSheet.create({
   card: {
-    width: 100,
-    height: 100,
+    width: deviceWidth / 2,
+    height: deviceWidth / 2,
     position: "absolute",
-    borderRadius: 50,
-    top: "50%",
-    left: "50%",
-    transform: [{ translateX: -50 }, { translateY: -50 }],
+    // top: "50%",
+    // left: "50%",
+    //transform: [{ translateX: -50 }, { translateY: -50 }],
   },
 });
 
@@ -21,7 +21,7 @@ type CardProps = {
     x: number;
     y: number;
   };
-  asset: Asset;
+  asset: ImageSourcePropType;
   rotationValue: Animated.Value;
 };
 
@@ -41,17 +41,18 @@ export default function Card({
     inputRange: [0, 360],
     outputRange: ["0deg", "-360deg"],
   });
+  
   return (
     <Animated.Image
-      source={{uri: asset.uri}}
+      source={asset}
       style={[
         styles.card,
         {
           left: center.x + position.x,
           top: center.y - position.y,
           transform: [
-            { translateX: -50 },
-            { translateY: -50 },
+            { translateX: StyleSheet.flatten(styles.card).width / -2 },
+            { translateY: StyleSheet.flatten(styles.card).width / -2 },
             { rotate: rotation },
           ],
         },
